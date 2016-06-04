@@ -42,3 +42,7 @@ The following arguments are supported:
 * `authorization` - (Required) The type of authorization used for the method
 * `api_key_required` - (Optional) Specify if the method requires an API key
 * `request_models` - (Optional) A map of the API models used for the request's content type
+  where key is the content type (e.g. `application/json`)
+  and value is either `Error`, `Empty` (built-in models) or `aws_api_gateway_model`'s `name`.
+* `request_parameters_in_json` - (Optional) A map written as a JSON string specifying
+  the request query string parameters and headers that should be passed to the integration

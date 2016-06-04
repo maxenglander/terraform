@@ -1,30 +1,36 @@
 #!/bin/bash
 
+set -e
+
+cd
 sudo apt-get update
 sudo apt-get install -y git make mercurial
 
-GOPKG=go1.5.2.linux-amd64.tar.gz
-wget https://storage.googleapis.com/golang/$GOPKG
-sudo tar -xvf $GOPKG -C /usr/local/
+sudo wget -O /usr/local/bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
+sudo chmod +x /usr/local/bin/gimme
+gimme 1.6 >> .bashrc
 
 mkdir ~/go
+eval "$(/usr/local/bin/gimme 1.6)"
 echo 'export GOPATH=$HOME/go' >> .bashrc
-echo 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' >> .bashrc
-source .bashrc
 export GOPATH=$HOME/go
-export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 
+export PATH=$PATH:$HOME/terraform:$HOME/go/bin
+echo 'export PATH=$PATH:$HOME/terraform:$HOME/go/bin' >> .bashrc
+source .bashrc
+
+go get github.com/tools/godep
 go get github.com/hashicorp/terraform
 cd $GOPATH/src/github.com/hashicorp/terraform
-make updatedeps
+godep restore
 
 cd
-git clone https://git.openstack.org/openstack-dev/devstack -b stable/liberty
+git clone https://git.openstack.org/openstack-dev/devstack -b stable/mitaka
 cd devstack
 cat >local.conf <<EOF
 [[local|localrc]]
 # OpenStack version
-OPENSTACK_VERSION="liberty"
+OPENSTACK_VERSION="mitaka"
 
 # devstack password
 DEVSTACK_PASSWORD="password"
@@ -68,7 +74,11 @@ enable_service q-metering
 enable_service q-lbaas
 enable_service q-fwaas
 
-# Disable Tempest
+# Enable Trove
+enable_plugin trove git://git.openstack.org/openstack/trove.git stable/\$OPENSTACK_VERSION
+enable_service trove,tr-api,tr-tmgr,tr-cond
+
+# Disable Temptest
 disable_service tempest
 
 # Disable Horizon
@@ -91,6 +101,7 @@ disable_service horizon
 # For more information on Heat and DevStack see
 # http://docs.openstack.org/developer/heat/getting_started/on_devstack.html
 #IMAGE_URLS+=",http://cloud.fedoraproject.org/fedora-20.x86_64.qcow2"
+#IMAGE_URLS+=",https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img"
 
 # Logging
 LOGDAYS=1
@@ -105,21 +116,20 @@ wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
 glance image-create --name CirrOS --disk-format qcow2 --container-format bare < cirros-0.3.4-x86_64-disk.img
 nova flavor-create m1.tform 99 512 5 1 --ephemeral 10
 _NETWORK_ID=$(nova net-list | grep private | awk -F\| '{print $2}' | tr -d ' ')
+_EXTGW_ID=$(nova net-list | grep public | awk -F\| '{print $2}' | tr -d ' ')
 _IMAGE_ID=$(nova image-list | grep CirrOS | awk -F\| '{print $2}' | tr -d ' ' | head -1)
 echo export OS_IMAGE_NAME="cirros-0.3.4-x86_64-uec" >> openrc
 echo export OS_IMAGE_ID="$_IMAGE_ID" >> openrc
 echo export OS_NETWORK_ID=$_NETWORK_ID >> openrc
+echo export OS_EXTGW_ID=$_EXTGW_ID >> openrc
 echo export OS_POOL_NAME="public" >> openrc
 echo export OS_FLAVOR_ID=99 >> openrc
 source openrc demo
 
-cd $GOPATH/src/github.com/hashicorp/terraform
-make updatedeps
-
 # Replace the below lines with the repo/branch you want to test
 #git remote add jtopjian https://github.com/jtopjian/terraform
 #git fetch jtopjian
-#git checkout --track jtopjian/openstack-acctest-fixes
+#git checkout --track jtopjian/openstack-secgroup-safe-delete
 #make testacc TEST=./builtin/providers/openstack TESTARGS='-run=AccBlockStorageV1'
 #make testacc TEST=./builtin/providers/openstack TESTARGS='-run=AccCompute'
 #make testacc TEST=./builtin/providers/openstack
