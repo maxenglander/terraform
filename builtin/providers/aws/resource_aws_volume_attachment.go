@@ -19,7 +19,7 @@ func resourceAwsVolumeAttachment() *schema.Resource {
 		Create: resourceAwsVolumeAttachmentCreate,
 		Read:   resourceAwsVolumeAttachmentRead,
 		Delete: resourceAwsVolumeAttachmentDelete,
-		Update: resourceAwsVolumeAttachmentRead,
+		Update: resourceAwsVolumeAttachmentUpdate,
 
 		Schema: map[string]*schema.Schema{
 			"device_name": &schema.Schema{
@@ -47,9 +47,9 @@ func resourceAwsVolumeAttachment() *schema.Resource {
 			},
 
 			"skip_detach": &schema.Schema{
-				Default:  false,
 				Type:     schema.TypeBool,
 				Optional: true,
+				Computed: true,
 			},
 		},
 	}
@@ -151,16 +151,14 @@ func resourceAwsVolumeAttachmentRead(d *schema.ResourceData, meta interface{}) e
 		}
 		return fmt.Errorf("Error reading EC2 volume %s for instance: %s: %#v", d.Get("volume_id").(string), d.Get("instance_id").(string), err)
 	}
+
 	return nil
 }
 
 func resourceAwsVolumeAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	if d.Get("skip_detach").(bool) {
+	if attr, ok := d.GetOk("skip_detach"); ok && attr.(bool) {
 		d.SetId("")
 		return nil
-	} else {
-		return fmt.Errorf(
-			"Intended to skip detach, but found to be false")
 	}
 
 	conn := meta.(*AWSClient).ec2conn
@@ -193,6 +191,10 @@ func resourceAwsVolumeAttachmentDelete(d *schema.ResourceData, meta interface{})
 			vID, iID)
 	}
 	d.SetId("")
+	return nil
+}
+
+func resourceAwsVolumeAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
