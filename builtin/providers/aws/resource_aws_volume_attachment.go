@@ -44,6 +44,13 @@ func resourceAwsVolumeAttachment() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+
+			"skip_detach": &schema.Schema{
+				Default:  false,
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -148,6 +155,11 @@ func resourceAwsVolumeAttachmentRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceAwsVolumeAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+	if d.Get("skip_detach").(bool) {
+		d.SetId("")
+		return nil
+	}
+
 	conn := meta.(*AWSClient).ec2conn
 
 	vID := d.Get("volume_id").(string)
