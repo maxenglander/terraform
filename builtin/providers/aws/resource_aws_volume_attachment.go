@@ -49,7 +49,6 @@ func resourceAwsVolumeAttachment() *schema.Resource {
 				Default:  false,
 				Type:     schema.TypeBool,
 				Optional: true,
-				Computed: true,
 			},
 		},
 	}
