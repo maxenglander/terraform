@@ -158,6 +158,9 @@ func resourceAwsVolumeAttachmentDelete(d *schema.ResourceData, meta interface{})
 	if d.Get("skip_detach").(bool) {
 		d.SetId("")
 		return nil
+	} else {
+		return fmt.Errorf(
+			"Intended to skip detach, but found to be false")
 	}
 
 	conn := meta.(*AWSClient).ec2conn
