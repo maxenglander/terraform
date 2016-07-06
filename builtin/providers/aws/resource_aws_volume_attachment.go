@@ -19,6 +19,7 @@ func resourceAwsVolumeAttachment() *schema.Resource {
 		Create: resourceAwsVolumeAttachmentCreate,
 		Read:   resourceAwsVolumeAttachmentRead,
 		Delete: resourceAwsVolumeAttachmentDelete,
+		Update: resourceAwsVolumeAttachmentRead,
 
 		Schema: map[string]*schema.Schema{
 			"device_name": &schema.Schema{
@@ -47,7 +48,6 @@ func resourceAwsVolumeAttachment() *schema.Resource {
 
 			"skip_detach": &schema.Schema{
 				Default:  false,
-				ForceNew: false,
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
