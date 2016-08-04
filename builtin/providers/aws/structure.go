@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elasticbeanstalk"
 	elasticsearch "github.com/aws/aws-sdk-go/service/elasticsearchservice"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/redshift"
@@ -205,6 +206,13 @@ func expandIPPerms(
 			list := raw.([]interface{})
 			for _, v := range list {
 				perm.IpRanges = append(perm.IpRanges, &ec2.IpRange{CidrIp: aws.String(v.(string))})
+			}
+		}
+
+		if raw, ok := m["prefix_list_ids"]; ok {
+			list := raw.([]interface{})
+			for _, v := range list {
+				perm.PrefixListIds = append(perm.PrefixListIds, &ec2.PrefixListId{PrefixListId: aws.String(v.(string))})
 			}
 		}
 
@@ -996,6 +1004,30 @@ func flattenAsgEnabledMetrics(list []*autoscaling.EnabledMetric) []string {
 		}
 	}
 	return strs
+}
+
+func flattenKinesisShardLevelMetrics(list []*kinesis.EnhancedMetrics) []string {
+	if len(list) == 0 {
+		return []string{}
+	}
+	strs := make([]string, 0, len(list[0].ShardLevelMetrics))
+	for _, s := range list[0].ShardLevelMetrics {
+		strs = append(strs, *s)
+	}
+	return strs
+}
+
+func flattenApiGatewayStageKeys(keys []*string) []map[string]interface{} {
+	stageKeys := make([]map[string]interface{}, 0, len(keys))
+	for _, o := range keys {
+		key := make(map[string]interface{})
+		parts := strings.Split(*o, "/")
+		key["stage_name"] = parts[1]
+		key["rest_api_id"] = parts[0]
+
+		stageKeys = append(stageKeys, key)
+	}
+	return stageKeys
 }
 
 func expandApiGatewayStageKeys(d *schema.ResourceData) []*apigateway.StageKey {

@@ -82,9 +82,17 @@ The following attributes are exported:
 * `mac_address` - See Argument Reference above.
 * `tenant_id` - See Argument Reference above.
 * `device_owner` - See Argument Reference above.
-* `security_groups` - See Argument Reference above.
+* `security_group_ids` - See Argument Reference above.
 * `device_id` - See Argument Reference above.
 * `fixed_ip/ip_address` - See Argument Reference above.
+
+## Import
+
+Ports can be imported using the `id`, e.g.
+
+```
+$ terraform import openstack_networking_port_v2.port_1 eae26a3e-1c33-4cc1-9c31-0cd729c438a1
+```
 
 ## Notes
 

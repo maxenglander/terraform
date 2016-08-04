@@ -210,7 +210,9 @@ The following arguments are supported:
 * `vm_size` - (Required) Specifies the [size of the virtual machine](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-size-specs/).
 * `storage_image_reference` - (Optional) A Storage Image Reference block as documented below.
 * `storage_os_disk` - (Required) A Storage OS Disk block as referenced below.
+* `delete_os_disk_on_termination` - (Optional) Flag to enable deletion of the OS Disk VHD blob when the VM is deleted, defaults to `false`
 * `storage_data_disk` - (Optional) A list of Storage Data disk blocks as referenced below.
+* `delete_data_disks_on_termination` - (Optional) Flag to enable deletion of Storage Disk VHD blobs when the VM is deleted, defaults to `false`
 * `os_profile` - (Required) An OS Profile block as documented below.
 * `os_profile_windows_config` - (Required, when a windows machine) A Windows config block as documented below.
 * `os_profile_linux_config` - (Required, when a linux machine) A Linux config block as documented below.
@@ -252,7 +254,7 @@ For more information on the different example configurations, please check out t
 
 `os_profile` supports the following:
 
-* `computer_name` - (Optional) Specifies the name of the virtual machine.
+* `computer_name` - (Required) Specifies the name of the virtual machine.
 * `admin_username` - (Required) Specifies the name of the administrator account.
 * `admin_password` - (Required) Specifies the password of the administrator account.
 * `custom_data` - (Optional) Specifies a base-64 encoded string of custom data. The base-64 encoded string is decoded to a binary array that is saved as a file on the Virtual Machine. The maximum length of the binary array is 65535 bytes.
