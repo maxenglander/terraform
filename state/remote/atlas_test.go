@@ -3,8 +3,11 @@ package remote
 import (
 	"bytes"
 	"crypto/md5"
+	"crypto/tls"
+	"crypto/x509"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -34,6 +37,53 @@ func TestAtlasClient(t *testing.T) {
 	}
 
 	testClient(t, client)
+}
+
+func TestAtlasClient_noRetryOnBadCerts(t *testing.T) {
+	acctest.RemoteTestPrecheck(t)
+
+	client, err := atlasFactory(map[string]string{
+		"access_token": "NOT_REQUIRED",
+		"name":         "hashicorp/test-remote-state",
+	})
+	if err != nil {
+		t.Fatalf("bad: %s", err)
+	}
+
+	ac := client.(*AtlasClient)
+	// trigger the AtlasClient to build the http client and assign HTTPClient
+	httpClient, err := ac.http()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// remove the CA certs from the client
+	brokenCfg := &tls.Config{
+		RootCAs: new(x509.CertPool),
+	}
+	httpClient.HTTPClient.Transport.(*http.Transport).TLSClientConfig = brokenCfg
+
+	// Instrument CheckRetry to make sure we didn't retry
+	retries := 0
+	oldCheck := httpClient.CheckRetry
+	httpClient.CheckRetry = func(resp *http.Response, err error) (bool, error) {
+		if retries > 0 {
+			t.Fatal("retried after certificate error")
+		}
+		retries++
+		return oldCheck(resp, err)
+	}
+
+	_, err = client.Get()
+	if err != nil {
+		if err, ok := err.(*url.Error); ok {
+			if _, ok := err.Err.(x509.UnknownAuthorityError); ok {
+				return
+			}
+		}
+	}
+
+	t.Fatalf("expected x509.UnknownAuthorityError, got %v", err)
 }
 
 func TestAtlasClient_ReportedConflictEqualStates(t *testing.T) {
@@ -218,6 +268,17 @@ func (f *fakeAtlas) NoConflictAllowed(b bool) {
 }
 
 func (f *fakeAtlas) handler(resp http.ResponseWriter, req *http.Request) {
+	// access tokens should only be sent as a header
+	if req.FormValue("access_token") != "" {
+		http.Error(resp, "access_token in request params", http.StatusBadRequest)
+		return
+	}
+
+	if req.Header.Get(atlasTokenHeader) == "" {
+		http.Error(resp, "missing access token", http.StatusBadRequest)
+		return
+	}
+
 	switch req.Method {
 	case "GET":
 		// Respond with the current stored state.

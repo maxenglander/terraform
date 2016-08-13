@@ -1,10 +1,61 @@
 ## 0.7.1 (Unreleased)
 
 FEATURES:
+ * **New Provider:** `archive` [GH-7322]
+ * **New Resource:** `aws_vpn_gateway_attachment` [GH-7870]
+ * **New Resource:** `aws_load_balancer_policy` [GH-7458]
+ * **New Resource:** `aws_load_balancer_backend_server_policy` [GH-7458]
+ * **New Resource:** `aws_load_balancer_listener_policy` [GH-7458]
+ * **New Resource:** `aws_lb_ssl_negotiation_policy` [GH-8084]
+ * **New Resource:** `azurerm_virtual_network_peering` [GH-8168]
+ * **New Resource:** `google_compute_image` [GH-7960]
+ * **New Data Source:** `aws_ip_ranges` [GH-7984]
+ * **New Data Source:** `fastly_ip_ranges` [GH-7984]
 
-IMPROVEMENTS:
+IMPROVEMENTS
+ * provider/aws: Introduce `aws_elasticsearch_domain` `elasticsearch_version` field (to specify ES version) [GH-7860]
+ * provider/aws: Query all pages of group membership [GH-6726]
+ * provider/aws: Change the way ARNs are built [GH-7151]
+ * provider/aws: Add support for Elasticsearch destination to firehose delivery streams [GH-7839]
+ * provider/aws: Retry AttachInternetGateway and increase timeout on `aws_internet_gateway` [GH-7891]
+ * provider/aws: Add support for Enhanced monitoring to `aws_rds_cluster_instance` [GH-8038]
+ * provider/aws: Add ability to set Requests Payer in `aws_s3_bucket` [GH-8065]
+ * provider/aws: Add ability to set canned ACL in `aws_s3_bucket_object` [GH-8091]
+ * provider/aws: Allow skipping credentials validation, requesting Account ID and/or metadata API check [GH-7874]
+ * provider/aws: API gateway request/response parameters can now be specified as map, original `*_in_json` parameters  deprecated [GH-7794]
+ * provider/aws: Add support for `promotion_tier` to `aws_rds_cluster_instance` [GH-8087]
+ * provider/aws: Allow specifying custom S3 endpoint and enforcing S3 path style URLs via new provider options [GH-7871]
+ * provider/azurerm: Adds support for uploading blobs to azure storage from local source [GH-7994]
+ * provider/google: allows atomic Cloud DNS record changes [GH-6575]
+ * provider/google: Move URLMap hosts to TypeSet from TypeList [GH-7472]
+ * provider/google: Support static private IP addresses in `resource_compute_instance` [GH-6310]
+ * provider/openstack: Support updating the External Gateway assigned to a Neutron router [GH-8070]
+ * provider/openstack: Support for `value_specs` param on `openstack_networking_network_v2` [GH-8155]
+ * provider/vsphere: Improved SCSI controller handling in `vsphere_virtual_machine` [GH-7908]
+ * provider/vsphere: Adding disk type of `Thick Lazy` to `vsphere_virtual_disk` and `vsphere_virtual_machine` [GH-7916]
+ * provider/consul: add tls config support to consul provider [GH-7015]
+ * remote/consul: Support setting datacenter when using consul remote state [GH-8102]
+ * provider/google: Support Import of `google_compute_target_pool` [GH-8133]
+ * provider/google: Support Import of `google_compute_forwarding_rule` [GH-8122]
+ * provider/google: Support Import of `google_resource_http_health_check` [GH-8121]
+ * provider/google: Support Import of `google_compute_autoscaler` [GH-8115]
 
 BUG FIXES:
+ * core: Fix issue preventing `taint` from working with resources that had no other attributes in their diff [GH-8167]
+ * provider/aws: guard against missing image_digest in `aws_ecs_task_definition` [GH-7966]
+ * provider/aws: `aws_cloudformation_stack` now respects `timeout_in_minutes` field when waiting for CF API to finish an update operation [GH-7997]
+ * provider/aws: Prevent errors when `aws_s3_bucket` `acceleration_status` is not available in a given region [GH-7999]
+ * provider/aws: Add state filter to `aws_availability_zone`s data source [GH-7965]
+ * provider/aws: Handle lack of snapshot ID for a volume in `ami_copy` [GH-7995]
+ * provider/aws: Retry association of IAM Role & instance profile [GH-7938]
+ * provider/aws: Fix `aws_s3_bucket` resource `redirect_all_requests_to` action [GH-7883]
+ * provider/aws: Fix issue updating ElasticBeanstalk Environment Settings [GH-7777]
+ * provider/aws: `aws_rds_cluster` creation timeout bumped to 40 minutes [GH-8052]
+ * provider/aws: Fix line ending errors/diffs with IAM Server Certs [GH-8074]
+ * provider/aws: Fixing IAM data source policy generation to prevent spurious diffs [GH-6956]
+ * provider/aws: Correct how CORS rules are handled in `aws_s3_bucket` [GH-8096]
+ * provider/google: Use resource specific project when making queries/changes [GH-7029]
+ * provider/google: Fix read for the backend service resource [GH-7476]
 
 ## 0.7.0 (August 2, 2016)
 
